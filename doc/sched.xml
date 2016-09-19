@@ -1,0 +1,11 @@
+﻿<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="style.xsl" ?>
+<schedule data-venue="Saal 2">
+  <h2 class="day">Monday</h2>
+  <p class="time-slot">Noon:</p>
+  <h2 class="talk">Bread</h2>
+  <p class="time-slot">Evening:</p>
+  <h1 class="talk main-event">Brownies</h1>
+  <p class="time-slot">Night:</p>
+  <h2 class="talk">Leftovers</h2>
+</schedule>

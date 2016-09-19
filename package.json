@@ -1,0 +1,48 @@
+{ "name": "xml2js-no-honestly-this-one-works",
+  "version": "0.0.1",
+  "description": "The 9004th XML reader module on npm, and this one actually works, honestly!",
+  "keywords": [
+    "CLI",
+    "cdata",
+    "CDATA",
+    "read XML",
+    "totally works",
+    "XML", "xml",
+    "xml2js",
+    "xml2json"
+  ],
+
+  "author": "M.K. (https://github.com/mk-pmb)",
+  "homepage": "https://github.com/mk-pmb/xml2js-no-honestly-this-one-works#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mk-pmb/xml2js-no-honestly-this-one-works.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mk-pmb/xml2js-no-honestly-this-one-works/issues"
+  },
+
+  "private": false, "license": "ISC",
+
+  "main": "easy.js",
+  "bin": {
+    "xml2json": "lib/cli.js"
+  },
+  "scripts": {
+    "test": "demo-util-160404-test-demos"
+  },
+  "directories": {
+    "doc": "doc",
+    "test": "test"
+  },
+
+  "dependencies": {
+    "xml-js": "^0.9.5"
+  },
+  "devDependencies": {
+    "lib-demo-util-160404": "^0.1.0"
+  },
+
+
+  "npm vs. BOM = Unexpected token": "-*- coding: UTF-8 -*-"
+}
