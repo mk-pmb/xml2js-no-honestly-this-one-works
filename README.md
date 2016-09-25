@@ -8,9 +8,6 @@ xml2js-no-honestly-this-one-works
 The 9004th XML reader module on npm, and this one actually works, honestly!
 <!--/#echo -->
 
-… and even without doing any parsing of its own, because [sax][sax]
-does that quite well and [xml-js][xml-js] is brilliant at making a
-tree from what `sax` yields.
 
 
 Motivation

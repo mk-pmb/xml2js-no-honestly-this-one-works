@@ -1,11 +1,18 @@
 ﻿<?xml version="1.0"?>
-<?xml-stylesheet type="text/xsl" href="style.xsl" ?>
-<schedule data-venue="Saal 2">
+<?xml-stylesheet type="text/xsl" href="base.xsl" ?>
+<?xml-stylesheet href="print.css" media="print" title="paper-friendly version"
+  alternate="yes" type="text/css"?>
+<!DOCTYPE angle-brackets inside angle-brackets [
+  <!ELEMENT p (#PCDATA)>
+  ]>
+<schedule data-venue="Kitchen">
   <h2 class="day">Monday</h2>
-  <p class="time-slot">Noon:</p>
+  <p  class="time-slot">Noon:</p>
   <h2 class="talk">Bread</h2>
-  <p class="time-slot">Evening:</p>
-  <h1 class="talk main-event">Brownies</h1>
-  <p class="time-slot">Night:</p>
+  <p  class="time-slot">Evening:</p>
+  <h1 class="talk main-ev&#x65;nt">&#10;B<![CDATA[r]]>&#x6F;<!--
+    -->wn<![CDATA[ie]]>s<!--
+    --></h1>
+  <p  class="time-slot">Night:</p>
   <h2 class="talk">Leftovers</h2>
 </schedule>

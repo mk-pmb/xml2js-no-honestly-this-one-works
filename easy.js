@@ -4,15 +4,18 @@
 
 
 var EX, fs = require('fs'), xml2js = require('xml-js').xml2js,
-  fnut = require('./lib/func-util'),
-  obut = require('./lib/obj-util'),
-  noFun = require('./lib/nodefuncs');
+  xmlattrdict = require('xmlattrdict'),
+  fnut = require('./lib/func-util.js'),
+  obut = require('./lib/obj-util.js'),
+  compactElem = require('./lib/compact-elem.js'),
+  noFun = require('./lib/nodefuncs.js');
 
 
 EX = function xml2js() { return EX.magic.apply(null, arguments); };
 EX.nodeFuncs = noFun;
 EX.objUtil = obut;
 EX.funcUtil = fnut;
+EX.compact = compactElem;
 
 
 EX.magic = function (input, recv) {
@@ -29,9 +32,7 @@ EX.magic = function (input, recv) {
     }
     break;
   }
-  if (Buffer.isBuffer(input)) {
-    return EX.parseStr(input.toString('utf-8'), recv);
-  }
+  if (Buffer.isBuffer(input)) { return EX.parseStr(input, recv); }
   if (input) {
     if ((typeof input.then) === 'function') { return EX.fromThenable(input); }
   }
@@ -52,7 +53,7 @@ EX.parseFile = function (filename, recv) {
   if ((typeof recv) !== 'function') {
     throw new Error('Refusing to fs.readFileSync(). Do that yourself.');
   }
-  return fs.readFile(filename, 'UTF-8', EX.proxyErrDataCb(recv));
+  return fs.readFile(filename, null, EX.proxyErrDataCb(recv));
 };
 
 
@@ -86,65 +87,53 @@ EX.fromThenable = function (srcThenable) {
 
 
 EX.parseStr = function (xml, recv) {
-  if (Buffer.isBuffer(xml)) { xml = xml.toString('utf-8'); }
+  if (Buffer.isBuffer(xml)) {
+    xml.firstTagEnd = xml.indexOf('>');
+    if ((xml.firstTagEnd > 0) && (xml.firstTagEnd < 1024)) {
+      xml.xmlDeclEncoding = (String(xml.slice(0, xml.firstTagEnd)
+        ).match(/^\s*<\?xml(?=\s)[\S\s]*\sencoding="([\w\_]+)"[\S\s]*\?\>/
+        ) || false)[1];
+    }
+    xml = xml.toString(xml.xmlDeclEncoding || 'UTF-8');
+  }
+  xml = String(xml);
+  var decl = [], nxTag;
+  decl.hadBom = false;
+  if (xml[0] === '\uFEFF') {
+    decl.hadBom = xml[0];
+    xml = xml.slice(1);
+  }
+  decl.preserveLineNumbers = '';
+  decl.raw = [];
+  while (xml.match(/^\s*<[\?\!]/)) {
+    nxTag = (xml.match(xmlattrdict.tagRgx.at0) || false)[0];
+    if (!nxTag) { break; }
+    xml = xml.slice(nxTag.length);
+    decl.preserveLineNumbers += nxTag.replace(/[\S \t\r]+/g, '');
+    decl.raw.push(nxTag);
+    decl.push(xmlattrdict(nxTag.replace(/^\s+/, '')));
+  }
+  xml = '<?xml version="1.0"?>' + decl.preserveLineNumbers + xml;
   try {
     xml = xml2js(xml, { compact: false });
-    xml = EX.compact(xml);
+    xml = EX.compact(null, xml);
   } catch (parseErr) {
     if ((typeof recv) === 'function') { return recv(parseErr); }
     throw parseErr;
+  }
+  if (decl.length > 0) {
+    xml.splice.apply(xml, [1, 0].concat(decl.map(function (d) {
+      var tagName = obut.popProp(d, '', false),
+        children = obut.popProp(d, '[]', []);
+      return EX.compact.makeSimpleNode(xml, tagName, d, children);
+    })));
   }
   return fnut.asyncIfCb(xml, recv);
 };
 
 
-EX.couldBeRootElem = function (x) {
-  return (x && (x.type === undefined) && x.declaration
-    && ((x.elements || false).length === 1)
-    && ((x.elements[0] || false).type === 'element'));
-};
 
 
-EX.compact = function compact(verboseElem) {
-  var easyNode, popProp = obut.popProp.bind(null, verboseElem),
-    nodeType = popProp('type'), subElem = (nodeType === 'element'),
-    maybeRoot = ((!subElem) && EX.couldBeRootElem(verboseElem)),
-    parent;
-  if (subElem || maybeRoot) {
-    easyNode = [];
-    easyNode.tagName = popProp('name', false);
-    easyNode.attrib = popProp('attributes', false);
-    obut.objMap(easyNode.at, function (v, k) { easyNode[k + '='] = v; });
-    Object.assign(easyNode, EX.nodeFuncs);
-    easyNode.push(Object.assign({ '': easyNode.tagName, }, easyNode.at));
-    parent = Object.bind(null, easyNode);
-    popProp('elements', []).forEach(function (child, idx) {
-      child = compact(child);
-      if (Array.isArray(child)) {
-        child.idx = idx;
-        child.parent = parent;
-      }
-      easyNode.push(child);
-    });
-    if (verboseElem.declaration) {
-      easyNode.decl = easyNode[0]['?'] = obut.popProp(verboseElem.declaration,
-        'attributes');
-      obut.expectEmptyObj(popProp('declaration'));
-    }
-    obut.expectEmptyObj(verboseElem);
-    return easyNode;
-  }
-  switch (nodeType) {
-  case 'text':
-    return verboseElem.text;
-  case 'cdata':
-    easyNode = [verboseElem.cdata];
-    easyNode.tagName = '![CDATA[';
-    return easyNode;
-  }
-  throw new Error('unsupported node type: ' + String(nodeType));
-  // return verboseElem;
-};
 
 
 

@@ -37,10 +37,11 @@
   },
 
   "dependencies": {
+    "xmlattrdict": "0.1.11",
     "xml-js": "^0.9.5"
   },
   "devDependencies": {
-    "lib-demo-util-160404": "^0.1.0"
+    "lib-demo-util-160404": "^0.1.12"
   },
 
 
